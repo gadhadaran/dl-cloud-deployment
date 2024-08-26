@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="number"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            width: 100%;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #28a745;
+        }
+        button {
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Diabetes Prediction</h1>
+
+    <form id="prediction-form">
+        <div>
+            <label for="glucose">Glucose Level:</label>
+            <input type="number" id="glucose" name="glucose" min="1" placeholder="Enter glucose level" required>
+            <span id="glucose-error" class="error"></span>
+        </div>
+
+        <div>
+            <label for="bmi">BMI:</label>
+            <input type="number" id="bmi" name="bmi" min="1" step="any" placeholder="Enter BMI" required>
+            <span id="bmi-error" class="error"></span>
+        </div>
+
+        <div>
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" min="1" placeholder="Enter age" required>
+            <span id="age-error" class="error"></span>
+        </div>
+
+        <button type="submit">Predict</button>
+    </form>
+
+    <div id="result"></div>
+</div>
+
+<script>
+document.getElementById('prediction-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    // Get input values
+    const glucose = document.getElementById('glucose').value;
+    const bmi = document.getElementById('bmi').value;
+    const age = document.getElementById('age').value;
+
+    // Reset error messages
+    document.getElementById('glucose-error').textContent = '';
+    document.getElementById('bmi-error').textContent = '';
+    document.getElementById('age-error').textContent = '';
+    document.getElementById('result').textContent = '';
+
+    // Simple front-end validation
+    let isValid = true;
+
+    if (!glucose || glucose <= 0) {
+        document.getElementById('glucose-error').textContent = 'Please enter a valid glucose level.';
+        isValid = false;
+    }
+
+    if (!bmi || bmi <= 0) {
+        document.getElementById('bmi-error').textContent = 'Please enter a valid BMI.';
+        isValid = false;
+    }
+
+    if (!age || age <= 0) {
+        document.getElementById('age-error').textContent = 'Please enter a valid age.';
+        isValid = false;
+    }
+
+    if (!isValid) {
+        return;
+    }
+
+    // Send data to the backend if valid
+    try {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ glucose, bmi, age })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById('result').textContent = `Prediction: ${data.result}`;
+        } else {
+            document.getElementById('result').textContent = `Error: ${data.error}`;
+        }
+
+    } catch (error) {
+        document.getElementById('result').textContent = `An error occurred: ${error.message}`;
+    }
+});
+</script>
+
+</body>
+</html>
